@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: order-service
+  namespace: demo
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - order-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /orders
+      route:
+        - destination:
+            host: order-service.demo.svc.cluster.local
+            subset: v1
+            port:
+              number: 8080
+          weight: 80
+        - destination:
+            host: order-service.demo.svc.cluster.local
+            subset: v2
+            port:
+              number: 8080
+          weight: 20
