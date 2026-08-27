@@ -1,17 +1,16 @@
 FROM node:20-alpine
 
-ARG APP_VERSION=v1
-
 WORKDIR /app
 
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --chown=node:node src ./src
+COPY --chown=node:node public ./public
 
-ENV APP_VERSION=${APP_VERSION}
+ENV PORT=3000
 
 USER node
-EXPOSE 8080
+EXPOSE 3000
 
-CMD ["node", "src/index.js"]
+CMD ["node", "src/server.js"]

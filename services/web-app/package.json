@@ -1,13 +1,14 @@
 {
-  "name": "user-service",
+  "name": "web-app",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
     "test": "node --test",
     "test:watch": "node --test --watch"
   },
-  "dependencies": {
-    "express": "4.21.2"
+  "engines": {
+    "node": ">=20"
   }
 }

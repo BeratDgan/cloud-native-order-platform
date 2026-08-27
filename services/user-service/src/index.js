@@ -1,23 +1,23 @@
-const express = require("express");
+const { createUserServiceApp } = require("./app");
+const { createJsonLogger } = require("./logger");
 
-const app = express();
 const port = Number(process.env.PORT || 8080);
+const logger = createJsonLogger("user-service");
+const app = createUserServiceApp({ logger });
 
-app.get("/healthz", (_request, response) => {
-  response.json({ status: "ok" });
+const server = app.listen(port, "0.0.0.0", () => {
+  logger.info("server.started", { port });
 });
 
-app.get("/users/:id", (request, response) => {
-  const { id } = request.params;
-
-  response.json({
-    id,
-    name: `Demo User ${id}`,
-    email: `user${id}@example.com`,
-    servedBy: "user-service"
+function shutdown(signal) {
+  logger.info("server.stopping", { signal });
+  server.close((error) => {
+    if (error) {
+      logger.error("server.stop_failed", { message: error.message });
+      process.exitCode = 1;
+    }
   });
-});
+}
 
-app.listen(port, "0.0.0.0", () => {
-  console.log(`user-service listening on port ${port}`);
-});
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));

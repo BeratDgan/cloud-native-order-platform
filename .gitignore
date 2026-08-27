@@ -7,4 +7,3 @@ npm-debug.log*
 .env.*
 !.env.example
 .DS_Store
-package-lock.json

@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Mikroservis demo projesi için çalışan sipariş yönetimi uygulaması." />
+    <title>Sipariş Masası</title>
+    <link rel="stylesheet" href="/styles.css?v=3" />
+  </head>
+  <body>
+    <!--
+      THESIS: Altyapı davranışını gerçek sipariş eylemleriyle görünür kılan bir operasyon masası; standart tanıtım sayfası düzenini reddeder.
+      OWN-WORLD: Kâğıt beyazı çalışma zemini, koyu mürekkep, tek kobalt sinyali; fiş rayları, kural çizgileri ve yoğun ama sakin veri yüzeyleri.
+      STORY: Kullanıcı servisin durumunu görür, sipariş oluşturur, kuyruğu yönetir ve v1/v2 trafik davranışını gerçek isteklerle sınar.
+      FIRST VIEWPORT: İnce servis şeridi üstte; solda sabit sipariş formu, sağda geniş canlı kuyruk; trafik laboratuvarı ikinci çalışma bandında.
+      FORM: Kahve barı sipariş fişi ve üretim rayı, grounded listede 7. yön; seed 33f7abd9.
+      FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
+    <header class="topbar">
+      <a class="brand" href="#workspace" aria-label="Sipariş Masası ana çalışma alanı">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Sipariş Masası</span>
+      </a>
+      <div class="service-state" id="service-state" data-state="checking" role="status" aria-live="polite">
+        <span class="state-light" aria-hidden="true"></span>
+        <span id="service-state-text">Servis kontrol ediliyor</span>
+      </div>
+    </header>
+
+    <main id="workspace">
+      <section class="intro" aria-labelledby="page-title">
+        <div>
+          <h1 id="page-title">Sipariş akışını<br />canlı çalıştır.</h1>
+          <p>Yeni sipariş oluştur, servis zincirinden geçen cevabı gör ve Istio trafiğinin hangi order-service sürümüne ulaştığını gerçek isteklerle izle.</p>
+        </div>
+        <dl class="system-readout" aria-label="Uygulama bilgileri">
+          <div><dt>Veri deposu</dt><dd id="storage-readout">Bellek</dd></div>
+          <div><dt>Kuyruk</dt><dd id="order-count">—</dd></div>
+          <div><dt>Son sürüm</dt><dd id="last-version">—</dd></div>
+        </dl>
+      </section>
+
+      <div class="workspace-grid">
+        <aside class="compose" aria-labelledby="compose-title">
+          <div class="section-title">
+            <h2 id="compose-title">Yeni sipariş</h2>
+            <span>POST /orders</span>
+          </div>
+          <form id="order-form" novalidate>
+            <label for="user-id">Kullanıcı kimliği</label>
+            <input id="user-id" name="userId" type="number" inputmode="numeric" min="1" step="1" value="7" required />
+
+            <label for="product">Ürün</label>
+            <select id="product" name="product" required>
+              <option value="Demo Coffee">Demo Coffee</option>
+              <option value="Canary Coffee">Canary Coffee</option>
+              <option value="Filter Coffee">Filter Coffee</option>
+              <option value="Cold Brew">Cold Brew</option>
+            </select>
+
+            <label for="quantity">Adet</label>
+            <div class="quantity-control">
+              <button type="button" data-quantity="decrease" aria-label="Adedi azalt">−</button>
+              <input id="quantity" name="quantity" type="number" inputmode="numeric" min="1" max="20" step="1" value="1" required />
+              <button type="button" data-quantity="increase" aria-label="Adedi artır">+</button>
+            </div>
+
+            <p class="form-message" id="form-message" aria-live="polite"></p>
+            <button class="primary-action" id="create-order" type="submit">
+              <span>Siparişi oluştur</span><span aria-hidden="true">→</span>
+            </button>
+          </form>
+        </aside>
+
+        <section class="queue" aria-labelledby="queue-title">
+          <div class="section-title queue-heading">
+            <div>
+              <h2 id="queue-title">Canlı sipariş kuyruğu</h2>
+              <span>Geçici olarak bellek içinde tutulur</span>
+            </div>
+            <button class="quiet-action" id="refresh-orders" type="button">Kuyruğu yenile</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Sipariş</th>
+                  <th scope="col">Ürün</th>
+                  <th scope="col">Kullanıcı</th>
+                  <th scope="col">Adet</th>
+                  <th scope="col">Servis</th>
+                  <th scope="col">Zaman</th>
+                </tr>
+              </thead>
+              <tbody id="orders-body">
+                <tr class="state-row"><td colspan="6">Siparişler yükleniyor…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <section class="traffic-lab" aria-labelledby="traffic-title">
+        <div class="traffic-copy">
+          <h2 id="traffic-title">Trafik laboratuvarı</h2>
+          <p>Aynı sipariş kimliğiyle tekrar tekrar istek gönder. Istio aktifken cevaplar v1 ve v2 arasında tanımladığın ağırlıklara göre dağılır.</p>
+          <form id="probe-form" class="probe-form">
+            <label for="probe-id">Örnek sipariş kimliği</label>
+            <div>
+              <input id="probe-id" name="probeId" type="number" min="1" step="1" value="42" required />
+              <button id="send-probe" type="submit">İstek gönder</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="version-meter" aria-label="Bu tarayıcıdaki sürüm cevapları">
+          <div class="meter-row">
+            <span>order-service-v1</span>
+            <strong id="v1-count">0</strong>
+          </div>
+          <div class="meter-track" aria-hidden="true"><i id="v1-bar"></i></div>
+          <div class="meter-row">
+            <span>order-service-v2</span>
+            <strong id="v2-count">0</strong>
+          </div>
+          <div class="meter-track" aria-hidden="true"><i id="v2-bar"></i></div>
+          <button class="text-action" id="reset-counts" type="button">Sayaçları sıfırla</button>
+        </div>
+
+        <div class="response-panel">
+          <div class="response-heading">
+            <span>Son cevap</span>
+            <strong id="response-status">Henüz istek yok</strong>
+          </div>
+          <pre id="response-json" tabindex="0"><code>{
+  "ipucu": "Bir istek gönder ve servis cevabını burada gör."
+}</code></pre>
+        </div>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script src="/app.js?v=3" defer></script>
+  </body>
+</html>
