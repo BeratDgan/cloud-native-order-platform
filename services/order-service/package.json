@@ -8,6 +8,6 @@
     "test:watch": "node --test --watch"
   },
   "dependencies": {
-    "express": "4.21.2"
+    "express": "4.22.2"
   }
 }

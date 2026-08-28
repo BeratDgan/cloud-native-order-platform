@@ -1,4 +1,4 @@
-#pr açıldığında ve main'e pushlandığında çalışacak
+#pr açıldığında ve main'e pushlandığında çalışacak
 name: CI
 on:
   pull_request:
@@ -12,39 +12,39 @@ on:
 permissions:
   contents: read
 
-#node.js versiyon 20 kullanacak
+# Node.js 24 kullanacak
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true # Herhangi bir servis testi/build'i başarısız olursa pipeline anında kırılır
+      fail-fast: true # Herhangi bir servis testi/build'i başarısız olursa pipeline anında kırılır
       matrix:
-        service: [user-service, web-app, order-service] # matrix burada tanımlanıyor, her bir servis için ayrı job çalışacak
+        service: [user-service, web-app, order-service] # matrix burada tanımlanıyor, her bir servis için ayrı job çalışacak
 
-# üç service için test çalıştıracak
+# üç service için test çalıştıracak
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 24
         uses: actions/setup-node@v7.0.0
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false  
 
-      # Her servis için test 1 kere çalışır
+      # Her servis için test 1 kere çalışır
       - name: Install dependencies and test
         working-directory: services/${{ matrix.service }}
         run: |
           npm ci
           npm test
-# user-service ve web-app için standart build
+# user-service ve web-app için standart build
       - name: Build Docker Image (Standard Services)
         if: matrix.service != 'order-service'
         run: |
           docker build -t ${{ matrix.service }}:test services/${{ matrix.service }}
 
-# order-service için aynı Dockerfile üzerinden V1 build argümanı
+# order-service için aynı Dockerfile üzerinden V1 build argümanı
       - name: Build Docker Image (order-service v1)
         if: matrix.service == 'order-service'
         run: |
@@ -53,7 +53,7 @@ jobs:
             -t order-service:v1-test \
             services/order-service
 
-# order-service için aynı Dockerfile üzerinden V2 build argümanı
+# order-service için aynı Dockerfile üzerinden V2 build argümanı
       - name: Build Docker Image (order-service v2)
         if: matrix.service == 'order-service'
         run: |
@@ -61,8 +61,45 @@ jobs:
             --build-arg APP_VERSION=v2 \
             -t order-service:v2-test \
             services/order-service
-        
-# üç helm dosyası için lint çalıştırcak
+      
+
+      - name: Trivy Scan (Standard Services)
+        if: matrix.service != 'order-service'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: '${{ matrix.service }}:test'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          ignore-unfixed: true # henüz çözülmemiş güvenlik açıklarını ignore et
+          vuln-type: 'os,library' # hem işletim sistemi hem de kütüphane güvenlik açıklarını tarat
+
+      # order-service v1 (İlk çağrı: Trivy indirilir ve kurulur)
+      - name: Trivy Scan (order-service v1)
+        if: matrix.service == 'order-service'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'order-service:v1-test'
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
+
+      # order-service v2 (İkinci çağrı: Yeniden kurulum ATLANIR)
+      - name: Trivy Scan (order-service v2)
+        if: matrix.service == 'order-service'
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: 'order-service:v2-test'
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
+          skip-setup-trivy: true
+
+# üç helm dosyası için lint çalıştırcak
   helm-lint:
     runs-on: ubuntu-latest
     steps:
@@ -77,4 +114,4 @@ jobs:
           helm lint ./helm/user-service
           helm lint ./helm/web-app
           helm lint ./helm/order-service
-# Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.
+# Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.
