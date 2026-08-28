@@ -43,7 +43,6 @@ spec:
               port: http
             initialDelaySeconds: 5
             periodSeconds: 10
-          resources:
           env:
           - name: ORDER_SERVICE_URL
             value: {{ .Values.webApp.orderServiceUrl | quote }}
