@@ -1,0 +1,20 @@
+webApp:
+  replicaCount: 1
+
+  image:
+    repository: web-app
+    tag: local
+    pullPolicy: IfNotPresent
+
+  orderServiceUrl: http://order-service:8080
+
+  service:
+    port: 3000
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
