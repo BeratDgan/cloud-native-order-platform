@@ -6,7 +6,7 @@ on:
       - main
   push:
     branches:
-      - '**' #tüm branch pushlarında çalışacak
+      - main
 
   # Pipeline'ın yalnızca kod okuma yetkisi olsun
 permissions:
@@ -49,7 +49,7 @@ jobs:
         if: matrix.service == 'order-service'
         run: |
           docker build \
-            --build-arg VERSION=v1 \
+            --build-arg APP_VERSION=v1 \
             -t order-service:v1-test \
             services/order-service
 
@@ -58,7 +58,7 @@ jobs:
         if: matrix.service == 'order-service'
         run: |
           docker build \
-            --build-arg VERSION=v2 \
+            --build-arg APP_VERSION=v2 \
             -t order-service:v2-test \
             services/order-service
         
