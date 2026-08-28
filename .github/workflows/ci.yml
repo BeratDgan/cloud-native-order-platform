@@ -8,9 +8,11 @@ on:
     branches:
       - main
 
-  # Pipeline'ın yalnızca kod okuma yetkisi olsun
+  # Pipeline'ın kod okuma ve id-token izinleri olacak
+  # id-token write izni, Actions runner'ı Azure'un güvendiği OIDC token'ı üretilmesine izin verir
 permissions:
   contents: read
+  id-token: write
 
 # Node.js 24 kullanacak
 jobs:
@@ -98,6 +100,43 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
           skip-setup-trivy: true
+
+      # --- Aşağıdaki adımlar SADECE push + main durumunda çalışır ---
+      # PR'da bu noktaya kadar her şey çalışır, buradan sonrası skip edilir
+
+      - name: Azure Login
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: ACR Login
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: az acr login --name ${{ vars.ACR_NAME }}
+
+      # burada user-service ve web-app için tag ve push işlemleri yapılıyor
+      # latest yerine sha ile tagleniyor bu her build'in unique olmasını sağlıyor ve hangi commitin hangi image'i build ettiğini anlamamızı sağlıyor
+      - name: Tag and Push (Standard Services)
+        if: >
+          github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+          matrix.service != 'order-service'
+        run: |
+          docker tag ${{ matrix.service }}:test ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+          docker push ${{ vars.ACR_LOGIN_SERVER }}/${{ matrix.service }}:${{ github.sha }}
+
+      # burada order-service v1 ve v2 için tag ve push işlemleri yapılıyor
+      - name: Tag and Push (order-service v1 & v2)
+        if: >
+          github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+          matrix.service == 'order-service'
+        run: |
+          docker tag order-service:v1-test ${{ vars.ACR_LOGIN_SERVER }}/order-service:v1-${{ github.sha }}
+          docker push ${{ vars.ACR_LOGIN_SERVER }}/order-service:v1-${{ github.sha }}
+          docker tag order-service:v2-test ${{ vars.ACR_LOGIN_SERVER }}/order-service:v2-${{ github.sha }}
+          docker push ${{ vars.ACR_LOGIN_SERVER }}/order-service:v2-${{ github.sha }}
+
 
 # üç helm dosyası için lint çalıştırcak
   helm-lint:
