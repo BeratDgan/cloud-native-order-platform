@@ -61,7 +61,45 @@ jobs:
             --build-arg APP_VERSION=v2 \
             -t order-service:v2-test \
             services/order-service
-        
+      
+
+      - name: Trivy Scan (Standard Services)
+        if: matrix.service != 'order-service'
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: '${{ matrix.service }}:test'
+          exit-code: '1'
+          severity: 'HIGH,CRITICAL'
+          format: 'table'
+          ignore-unfixed: true # henüz çözülmemiş güvenlik açıklarını ignore et
+          vuln-type: 'os,library' # hem işletim sistemi hem de kütüphane güvenlik açıklarını tarat
+
+      # order-service v1 (İlk çağrı: Trivy indirilir ve kurulur)
+      - name: Trivy Scan (order-service v1)
+        if: matrix.service == 'order-service'
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: 'order-service:v1-test'
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
+
+      # order-service v2 (İkinci çağrı: Yeniden kurulum ATLANIR)
+      - name: Trivy Scan (order-service v2)
+        if: matrix.service == 'order-service'
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          image-ref: 'order-service:v2-test'
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'HIGH,CRITICAL'
+          ignore-unfixed: true
+          exit-code: '1'
+          skip-setup-trivy: true
+          skip-pkg-db-update: true
+
 # üç helm dosyası için lint çalıştırcak
   helm-lint:
     runs-on: ubuntu-latest
