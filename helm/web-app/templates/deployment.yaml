@@ -31,6 +31,15 @@ spec:
           ports:
             - name: http
               containerPort: 3000
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          
           readinessProbe:
             httpGet:
               path: /healthz
@@ -44,7 +53,7 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           env:
-          - name: ORDER_SERVICE_URL
-            value: {{ .Values.webApp.orderServiceUrl | quote }}
+            - name: ORDER_SERVICE_URL
+              value: {{ .Values.webApp.orderServiceUrl | quote }}
           resources:
 {{ toYaml .Values.webApp.resources | indent 12 }}
