@@ -12,7 +12,7 @@ on:
 permissions:
   contents: read
 
-#node.js versiyon 20 kullanacak
+# Node.js 24 kullanacak
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
@@ -26,10 +26,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7.0.1
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 24
         uses: actions/setup-node@v7.0.0
         with:
-          node-version: '20'
+          node-version: '24'
           package-manager-cache: false  
 
       # Her servis için test 1 kere çalışır
@@ -98,7 +98,6 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
           skip-setup-trivy: true
-          skip-pkg-db-update: true
 
 # üç helm dosyası için lint çalıştırcak
   helm-lint:
