@@ -1,0 +1,80 @@
+#pr açıldığında ve main'e pushlandığında çalışacak
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - '**' #tüm branch pushlarında çalışacak
+
+  # Pipeline'ın yalnızca kod okuma yetkisi olsun
+permissions:
+  contents: read
+
+#node.js versiyon 20 kullanacak
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true # Herhangi bir servis testi/build'i başarısız olursa pipeline anında kırılır
+      matrix:
+        service: [user-service, web-app, order-service] # matrix burada tanımlanıyor, her bir servis için ayrı job çalışacak
+
+# üç service için test çalıştıracak
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '20'
+          package-manager-cache: false  
+
+      # Her servis için test 1 kere çalışır
+      - name: Install dependencies and test
+        working-directory: services/${{ matrix.service }}
+        run: |
+          npm ci
+          npm test
+# user-service ve web-app için standart build
+      - name: Build Docker Image (Standard Services)
+        if: matrix.service != 'order-service'
+        run: |
+          docker build -t ${{ matrix.service }}:test services/${{ matrix.service }}
+
+# order-service için aynı Dockerfile üzerinden V1 build argümanı
+      - name: Build Docker Image (order-service v1)
+        if: matrix.service == 'order-service'
+        run: |
+          docker build \
+            --build-arg VERSION=v1 \
+            -t order-service:v1-test \
+            services/order-service
+
+# order-service için aynı Dockerfile üzerinden V2 build argümanı
+      - name: Build Docker Image (order-service v2)
+        if: matrix.service == 'order-service'
+        run: |
+          docker build \
+            --build-arg VERSION=v2 \
+            -t order-service:v2-test \
+            services/order-service
+        
+# üç helm dosyası için lint çalıştırcak
+  helm-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint Helm Charts
+        run: |
+          helm lint ./helm/user-service
+          helm lint ./helm/web-app
+          helm lint ./helm/order-service
+# Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.
