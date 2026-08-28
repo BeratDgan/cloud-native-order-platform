@@ -1,0 +1,66 @@
+#pr açıldığında ve main'e pushlandığında çalışacak
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+#node.js versiyon 20 kullanacak
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+#dört image’ın build edilebildiğini doğrulamalı
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies and run tests for user-service
+        working-directory: ./user-service
+        run: |
+          npm ci
+          npm test
+      - name: Install dependencies and run tests for web-app
+        working-directory: ./web-app
+        run: |
+          npm ci
+          npm test
+      - name: Install dependencies and run tests for order-service v1
+        working-directory: ./order-service/v1
+        run: |
+          npm ci
+          npm test
+      - name: Install dependencies and run tests for order-service v2
+        working-directory: ./order-service/v2
+        run: |
+          npm ci
+          npm test
+
+      - name: Build Docker image for user-service
+        run: docker build -t user-service:test ./user-service
+
+      - name: Build Docker image for web-app
+        run: docker build -t web-app:test ./web-app
+
+      - name: Build Docker image for order-service v1
+        run: docker build -t order-service-v1:test ./order-service/v1
+
+      - name: Build Docker image for order-service v2
+        run: docker build -t order-service-v2:test ./order-service/v2
+
+        
+# üç helm dosyası için lint çalıştırcak
+      - name: Lint Helm charts
+        run: |
+          helm lint ./helm/user-service
+          helm lint ./helm/web-app
+          helm lint ./helm/order-service
+
+# Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.
