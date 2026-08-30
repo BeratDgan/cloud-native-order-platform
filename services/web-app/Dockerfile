@@ -20,7 +20,7 @@ COPY --chown=node:node public ./public
 
 ENV PORT=3000
 
-USER node
+USER 1000:1000
 EXPOSE 3000
 
 CMD ["node", "src/server.js"]

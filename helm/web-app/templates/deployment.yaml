@@ -32,9 +32,15 @@ spec:
             - name: http
               containerPort: 3000
 
+          # securityContext ile container için güvenlik önlemleri alındı
+          #örneğin readOnlyRootFilesystem: true ile containerın root dosya sistemine yazma izni engellendi
+          # runAsNonRoot ve runAsUser:1000 ile containerın root kullanıcısı olarak çalışması engellendi ve 1000 UID ile çalışması sağlandı
+          # allowPrivilegeEscalation: sınırlı kullanıcıdan root'a yükselme engellendi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsUser: 1000
+            runAsGroup: 1000
             runAsNonRoot: true
             capabilities:
               drop:
