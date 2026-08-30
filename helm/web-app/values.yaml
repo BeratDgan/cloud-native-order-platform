@@ -2,8 +2,8 @@ webApp:
   replicaCount: 1
 
   image:
-    repository: web-app
-    tag: local
+    repository: beratcloudnativeacr.azurecr.io/web-app
+    tag: 5de38d6509dd0d95f6303f45fa3aa748b9be393f
     pullPolicy: IfNotPresent
 
   orderServiceUrl: http://order-service:8080
