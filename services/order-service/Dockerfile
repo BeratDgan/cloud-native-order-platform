@@ -21,7 +21,7 @@ COPY --chown=node:node src ./src
 
 ENV APP_VERSION=${APP_VERSION}
 
-USER node
+USER 1000:1000
 EXPOSE 8080
 
 CMD ["node", "src/index.js"]
