@@ -1,8 +1,8 @@
 userService:
   replicaCount: 1
   image:
-    repository: user-service
-    tag: demo
+    repository: beratcloudnativeacr.azurecr.io/user-service
+    tag: 5de38d6509dd0d95f6303f45fa3aa748b9be393f
     pullPolicy: IfNotPresent
   service:
     port: 8080

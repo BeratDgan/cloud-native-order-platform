@@ -1,13 +1,13 @@
 orderService:
   image:
-    repository: order-service
+    repository: beratcloudnativeacr.azurecr.io/order-service
     pullPolicy: IfNotPresent
   versions:
     - name: v1
-      tag: v1
+      tag: v1-5de38d6509dd0d95f6303f45fa3aa748b9be393f
       replicaCount: 1
     - name: v2
-      tag: v2
+      tag: v2-5de38d6509dd0d95f6303f45fa3aa748b9be393f
       replicaCount: 1
   userServiceUrl: http://user-service:8080
   service:
