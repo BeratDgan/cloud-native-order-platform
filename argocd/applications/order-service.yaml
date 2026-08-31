@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: order-service
+  namespace: argocd
+spec:
+  project: cloud-native-platform
+  source:
+    repoURL: git@github.com:BeratDgan/cloud-native-order-platform.git
+    targetRevision: main
+    path: helm/order-service
+    helm:
+      releaseName: order-service
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=false

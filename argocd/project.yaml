@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: cloud-native-platform
+  namespace: argocd
+spec:
+  description: cloud-native-platform için GitOps sinirlari
+  sourceRepos:
+  # yalnızca bu github reposu kullanılabilir
+    - git@github.com:BeratDgan/cloud-native-order-platform.git
+  destinations:
+  # yalnızca bu cluster'a deploy edilebilir(minikube)
+    - server: https://kubernetes.default.svc
+    # yalnızca demo namespace'ine deploy edilebilir
+      namespace: demo
