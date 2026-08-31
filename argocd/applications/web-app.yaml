@@ -15,16 +15,11 @@ spec:
     server: https://kubernetes.default.svc
     namespace: demo
   syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true
+      allowEmpty: false
     syncOptions:
       - CreateNamespace=false
-      # automated sync ile deploy sırasında kaynaklar otomatik olarak güncellenir
-      - Automated=true
-      # prune ile yapılan deploy sırasında silinmiş olan kaynaklar otomatik olarak silinir
-      - Prune=true
-      # selfHeal ile yapılan deploy sırasında silinmiş olan kaynaklar otomatik olarak tekrar oluşturulur
-      - SelfHeal=true
-      # allowEmpty kapalı olduğundan deploy sırasında kaynaklar silinmişse hata alınır ve deploy başarısız olur
-      - AllowEmpty=false
-      # CreateNamespace=false ile deploy sırasında namespace yoksa oluşturulmaz ve hata alınır
-      - CreateNamespace=false
-
+      - PruneLast=true
