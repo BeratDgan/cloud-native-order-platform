@@ -24,6 +24,8 @@ spec:
         app.kubernetes.io/name: web-app
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      imagePullSecrets:
+        {{- toYaml .Values.webApp.imagePullSecrets | nindent 8 }}
       containers:
         - name: web-app
           image: "{{ .Values.webApp.image.repository }}:{{ .Values.webApp.image.tag }}"
