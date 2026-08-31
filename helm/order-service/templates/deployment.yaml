@@ -23,6 +23,8 @@ spec:
         app.kubernetes.io/name: order-service
         app.kubernetes.io/instance: {{ $.Release.Name }}
     spec:
+      imagePullSecrets:
+        {{- toYaml $.Values.orderService.imagePullSecrets | nindent 8 }}
       containers:
         - name: order-service
           image: "{{ $.Values.orderService.image.repository }}:{{ .tag }}"
