@@ -138,7 +138,7 @@ jobs:
           docker push ${{ vars.ACR_LOGIN_SERVER }}/order-service:v2-${{ github.sha }}
 
 
-# üç helm dosyası için lint çalıştırcak
+# Helm chartları için lint çalıştıracak
   helm-lint:
     runs-on: ubuntu-latest
     steps:
@@ -148,9 +148,10 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v4
 
-      - name: Lint Helm Charts
+      - name: Lint and render Helm charts
         run: |
-          helm lint ./helm/user-service
-          helm lint ./helm/web-app
-          helm lint ./helm/order-service
+          for chart in ./helm/*; do
+            helm lint "$chart"
+            helm template "$(basename "$chart")" "$chart" --namespace demo > /dev/null
+          done
 # Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.
