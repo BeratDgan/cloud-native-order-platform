@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: network-policy-demo
+spec:
+  # pod selector boş olduğu için bu namespacedeki bütün podları seçer
+  podSelector: {}
+
+  policyTypes:
+  #Ingress: Bu ağ politikası, podlara gelen trafiği kontrol eder.
+  - Ingress
+
+  # ingress [] boş liste olması seçilen podlara hiçbir kaynaktan gelen trafiğe izin verilmeyeceğini belirtir
+  ingress: []
