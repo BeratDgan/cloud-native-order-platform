@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql
+  namespace: demo
+  labels:
+    app: postgresql
+spec:
+  serviceName: {{ .Values.postgresql.service.name }}
+  replicas: {{ .Values.postgresql.replicaCount }}
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.postgresql.securityContext.runAsUser }}
+        fsGroup: {{ .Values.postgresql.securityContext.fsGroup }}
+        runAsGroup: {{ .Values.postgresql.securityContext.runAsGroup }}
+        runAsNonRoot: true
+      containers:
+        - name: postgresql
+          image: "{{ .Values.postgresql.image.repository }}@{{ .Values.postgresql.image.digest }}"
+          imagePullPolicy: {{ .Values.postgresql.image.pullPolicy }}
+          ports:
+            - containerPort: 5432
+              name: postgresql
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.database.name }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret.name }}
+                  key: {{ .Values.postgresql.existingSecret.usernameKey }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret.name }}
+                  key: {{ .Values.postgresql.existingSecret.passwordKey }}
+            - name: PGDATA
+              value: {{ .Values.postgresql.persistence.mountPath }}/{{ .Values.postgresql.persistence.pgDataSubdir }}
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: {{ .Values.postgresql.persistence.mountPath }}
+          resources:
+            limits:
+              cpu: {{ .Values.postgresql.resources.limits.cpu }}
+              memory: {{ .Values.postgresql.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.postgresql.resources.requests.cpu }}
+              memory: {{ .Values.postgresql.resources.requests.memory }}
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: {{ .Values.postgresql.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.postgresql.probes.periodSeconds }}
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "$(POSTGRES_USER)", "-d", "$(POSTGRES_DB)"]
+            initialDelaySeconds: {{ .Values.postgresql.probes.initialDelaySeconds }}
+            periodSeconds: {{ .Values.postgresql.probes.periodSeconds }}
+  volumeClaimTemplates:
+    - metadata:
+        name: postgresql-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: {{ .Values.postgresql.persistence.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.persistence.size }}
