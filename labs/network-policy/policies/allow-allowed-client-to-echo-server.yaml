@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-allowed-client-to-echo-server
+  namespace: network-policy-demo
+spec:
+  # Yani policy istemciyi değil, trafiği alacak sunucu podunu seçmeli.
+  podSelector: 
+
+    matchLabels:
+      app: echo-server
+
+  policyTypes:
+  #Ingress: Bu ağ politikası, podlara gelen trafiği kontrol eder.
+  - Ingress
+
+  # ingress kuralı burada access: allowed etiketine sahip podlardan gelen trafiğe izin 
+  # protokol tcp ve port 8080 üzerinden echo-server poduna erişim izni verilecektir.
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          access: allowed
+    ports:
+    - protocol: TCP
+      port: 8080
