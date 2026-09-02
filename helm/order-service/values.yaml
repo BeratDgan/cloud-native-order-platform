@@ -4,10 +4,10 @@ orderService:
     pullPolicy: IfNotPresent
   versions:
     - name: v1
-      tag: v1-5de38d6509dd0d95f6303f45fa3aa748b9be393f
+      tag: v1-3adfc4cf4517f52adcc89338d2fbfe1de128f4e6
       replicaCount: 1
     - name: v2
-      tag: v2-5de38d6509dd0d95f6303f45fa3aa748b9be393f
+      tag: v2-3adfc4cf4517f52adcc89338d2fbfe1de128f4e6
       replicaCount: 1
   userServiceUrl: http://user-service:8080
   database:
