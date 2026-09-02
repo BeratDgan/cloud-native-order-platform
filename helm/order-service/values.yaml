@@ -10,6 +10,16 @@ orderService:
       tag: v2-5de38d6509dd0d95f6303f45fa3aa748b9be393f
       replicaCount: 1
   userServiceUrl: http://user-service:8080
+  database:
+    host: postgresql
+    port: 5432
+    name: orders
+    poolMax: 5
+    connectionTimeoutMs: 3000
+    existingSecret:
+      name: postgres-credentials
+      usernameKey: username
+      passwordKey: password
   service:
     port: 8080
   resources:

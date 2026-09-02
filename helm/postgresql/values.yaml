@@ -3,15 +3,14 @@ postgresql:
   image:
     repository: postgres
     tag: "18-alpine"
-    # burada digest ile image'i sabitleyebiliriz.
     digest: "sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2"
     pullPolicy: IfNotPresent
 
   database:
     name: orders
 
-  existingSecret: 
-    name: postgresql-credentials
+  existingSecret:
+    name: postgres-credentials
     usernameKey: username
     passwordKey: password
 
@@ -19,32 +18,28 @@ postgresql:
     name: postgresql
     type: ClusterIP
     port: 5432
-    # headless sabit dns adını verir
     headless: true
 
-  # persistence kısmında storageClassName, size, mountPath ve pgDataSubdir gibi değerler ile veritabanının kalıcı olarak saklanacağı alanı belirliyoruz.
   persistence:
     storageClassName: standard
     size: 1Gi
     mountPath: /var/lib/postgresql/data
     pgDataSubdir: pgdata
-
-
   securityContext:
-    #  postgres:18-alpine image'inin resmi build scriptinde belirtilen default user ve group id'leri kullanıyoruz. Bu sayede container içerisinde postgres user'ı ile çalıştırılacak.
     runAsUser: 70
     fsGroup: 70
     runAsGroup: 70
 
   resources:
     limits:
-      cpu: 250m
-      memory: 256Mi
-    requests:
       cpu: 500m
       memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   probes:
-  # çalıştıktan 10 saniye sonra liveness probe çalışacak ve her 10 saniyede bir podun canlı olup olmadığını kontrol edecek.
+    startupPeriodSeconds: 2
+    startupFailureThreshold: 30
     initialDelaySeconds: 10
     periodSeconds: 10

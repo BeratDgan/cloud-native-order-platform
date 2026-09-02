@@ -1,15 +1,19 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{.Values.postgresql.service.name}}
-  namespace: demo
+  name: {{ .Values.postgresql.service.name }}
   labels:
     app: postgresql
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
+  type: {{ .Values.postgresql.service.type }}
+  {{- if .Values.postgresql.service.headless }}
   clusterIP: None
+  {{- end }}
   ports:
     - port: {{ .Values.postgresql.service.port }}
-      targetPort: 5432
+      targetPort: postgresql
       protocol: TCP
       name: postgresql
   selector:

@@ -16,14 +16,10 @@ spec:
     namespace: demo
   syncPolicy:
     automated:
-    # prune sayesinde Eğer bir kaynak artık Helm chart'ında tanımlı değilse, ArgoCD bu kaynağı Kubernetes kümesinden silinir.
+      enabled: true
       prune: true
-    # selfHeal sayesinde Eğer bir kaynak, Helm chart'ında tanımlı olan durumdan farklı bir duruma sahipse, ArgoCD bu kaynağı otomatik olarak Helm chart'ındaki duruma geri döndürür.
       selfHeal: true
-    # allowEmpty false sayesinde Eğer Helm chart'ında tanımlı olan kaynaklar, Kubernetes kümesinde hiç bulunmuyorsa, ArgoCD bu durumu bir hata olarak kabul eder ve senkronizasyon işlemini başarısız olarak işaretler.
       allowEmpty: false
     syncOptions:
-    # CreateNamespace=false sayesinde ArgoCD, Helm chart'ında belirtilen namespace'i otomatik olarak oluşturmaz. Eğer namespace mevcut değilse, senkronizasyon işlemi başarısız olur.
       - CreateNamespace=false
-    # PruneLast=true sayesinde ArgoCD, kaynakları silme işlemini, yeni kaynakları oluşturma işleminden sonra gerçekleştirir. Bu, özellikle bağımlılıkları olan kaynaklar için önemlidir; çünkü önce bağımlı kaynaklar oluşturulmalı ve ardından eski kaynaklar silinmelidir.
       - PruneLast=true
