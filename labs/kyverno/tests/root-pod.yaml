@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: root-pod
+  namespace: kyverno-demo
+spec:
+  containers:
+    - name: root-pod
+      image: registry.k8s.io/e2e-test-images/busybox:1.36.1-1
+      command:
+        - /bin/sh
+        - -c
+        - sleep 3600
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 50m
+          memory: 32Mi
