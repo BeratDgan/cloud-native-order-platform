@@ -17,3 +17,13 @@ output "key_vault_uri" {
   description = "External Secrets tarafından kullanılacak Key Vault adresi"
   value       = data.azurerm_key_vault.platform.vault_uri
 }
+
+output "external_secrets_identity_client_id" {
+  description = "Kubernetes ServiceAccount annotation için kullanilacak client ID"
+  value       = azurerm_user_assigned_identity.external_secrets.client_id
+}
+
+output "external_secrets_identity_principal_id" {
+  description = "Azure RBAC islemlerinde kullanilan principal ID"
+  value       = azurerm_user_assigned_identity.external_secrets.principal_id
+}
