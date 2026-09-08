@@ -27,3 +27,33 @@ output "external_secrets_identity_principal_id" {
   description = "Azure RBAC islemlerinde kullanilan principal ID"
   value       = azurerm_user_assigned_identity.external_secrets.principal_id
 }
+
+output "aks_name" {
+  description = "Oluşturulan AKS cluster adı"
+  value       = azurerm_kubernetes_cluster.platform.name
+}
+
+output "aks_node_resource_group" {
+  description = "AKS node ve ağ kaynaklarının bulunduğu Azure-managed resource group"
+  value       = azurerm_kubernetes_cluster.platform.node_resource_group
+}
+
+output "aks_oidc_issuer_url" {
+  description = "Workload Identity tarafından kullanılan AKS OIDC issuer"
+  value       = azurerm_kubernetes_cluster.platform.oidc_issuer_url
+}
+
+output "aks_connect_command" {
+  description = "AKS kubeconfig bağlantı komutu"
+  value       = "az aks get-credentials --resource-group ${var.resource_group_name} --name ${var.aks_name} --overwrite-existing"
+}
+
+output "aks_stop_command" {
+  description = "Kullanılmadığında AKS cluster'ını durdurma komutu"
+  value       = "az aks stop --resource-group ${var.resource_group_name} --name ${var.aks_name}"
+}
+
+output "aks_start_command" {
+  description = "Durdurulan AKS cluster'ını başlatma komutu"
+  value       = "az aks start --resource-group ${var.resource_group_name} --name ${var.aks_name}"
+}
