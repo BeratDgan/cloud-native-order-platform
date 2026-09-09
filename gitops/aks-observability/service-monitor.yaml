@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: application-monitor
+  namespace: monitoring
+  labels:
+    release: monitoring
+  namespaceSelector:
+    matchNames:
+      - demo
+  # servis seçicisi app etiketi user-service veya order-service olan servisleri seçer
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - user-service
+          - order-service
+  endpoints:
+    - port: http
+    - path: /metrics
+    - interval: 30s
+    - scrapeTimeout: 10s
