@@ -1,5 +1,5 @@
 apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+kind: PodMonitor
 metadata:
   name: application-monitor
   namespace: monitoring
@@ -9,7 +9,7 @@ spec:
   namespaceSelector:
     matchNames:
       - demo
-  # servis seçicisi app etiketi user-service veya order-service olan servisleri seçer
+  # pod seçicisi app etiketi user-service veya order-service olan servisleri seçer
   selector:
     matchExpressions:
       - key: app
@@ -17,8 +17,8 @@ spec:
         values:
           - user-service
           - order-service
-  endpoints:
-    - port: http
-    - path: /metrics
-    - interval: 30s
-    - scrapeTimeout: 10s
+  podMetricsEndpoints:
+    - portNumber: 15020
+      path: /stats/prometheus
+      interval: 30s
+      scrapeTimeout: 10s
