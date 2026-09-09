@@ -1,0 +1,14 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: cloud-native-platform
+  namespace: argocd
+spec:
+  description: AKS uygulamalari ve izole admission laboratuvari
+  sourceRepos:
+    - git@github.com:BeratDgan/cloud-native-order-platform.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: demo
+    - server: https://kubernetes.default.svc
+      namespace: kyverno-demo

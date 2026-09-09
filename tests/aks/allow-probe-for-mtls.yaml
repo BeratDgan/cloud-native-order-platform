@@ -1,0 +1,25 @@
+# Gecici test istisnasi. GitOps Application'larinin izledigi dizinlerde degildir.
+# Once NetworkPolicy deny testi yapilir; bu izin acilinca TCP baglantisi kurulur
+# ancak sidecar'siz istemcinin HTTP istegi STRICT mTLS tarafindan reddedilmelidir.
+# Test bitince bu policy mutlaka silinir.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: temporary-mtls-probe
+  namespace: demo
+spec:
+  podSelector:
+    matchLabels:
+      app: user-service
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kyverno-demo
+          podSelector:
+            matchLabels:
+              app: aks-security-probe
+      ports:
+        - protocol: TCP
+          port: 8080

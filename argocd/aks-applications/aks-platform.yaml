@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aks-platform
+  namespace: argocd
+spec:
+  project: cloud-native-platform
+  source:
+    repoURL: git@github.com:BeratDgan/cloud-native-order-platform.git
+    targetRevision: main
+    path: gitops/aks-platform
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=false
+      - PruneLast=true

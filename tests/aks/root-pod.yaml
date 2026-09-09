@@ -1,0 +1,22 @@
+# Sadece server-side dry-run ile test edilir; admission tarafindan reddedilmeli.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aks-root-denied
+  namespace: kyverno-demo
+spec:
+  automountServiceAccountToken: false
+  securityContext:
+    runAsUser: 0
+    runAsNonRoot: false
+  containers:
+    - name: root
+      image: registry.k8s.io/e2e-test-images/busybox:1.36.1-1
+      command: [/bin/sh, -c, sleep 3600]
+      resources:
+        requests:
+          cpu: 10m
+          memory: 16Mi
+        limits:
+          cpu: 50m
+          memory: 32Mi
