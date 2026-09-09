@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: aks-observability
@@ -8,8 +8,9 @@ spec:
   source:
     repoURL: git@github.com:BeratDgan/cloud-native-order-platform.git
     targetRevision: main
-    path: gitops/aks-platform
+    path: gitops/aks-observability
   destination:
+    server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
     automated:
