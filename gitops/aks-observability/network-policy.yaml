@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: demo
+# hedef podlar app değeri user-service veya order-service. Yön: yalnızca Ingress. Kaynak namespace:- kubernetes.io/metadata.name: monitoring. Kaynak pod:- app.kubernetes.io/name: prometheus. İzin verilen port:- TCP 8080
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - user-service
+          - order-service
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - prometheus
+      ports:
+        - protocol: TCP
+          port: 8080
