@@ -1,6 +1,8 @@
-# AKS taşıması — observability öncesi kontrol noktası
+# AKS taşıması — doğrulama kontrol noktası
 
-Doğrulama tarihi: 9 Eylül 2026. Bu aşama dashboard, alarm ve merkezi log kurulumu içermez.
+Doğrulama tarihi: 10 Eylül 2026. AKS taşıması, Prometheus metrik toplama ve Grafana
+dashboard kurulumu tamamlandı. Alertmanager harici bildirim kanalı ve merkezi loglama
+henüz tamamlanmadı.
 
 ## Çalışan ortam
 
@@ -27,6 +29,7 @@ tanımları başlangıçta elle uygulanır; henüz bir app-of-apps kurulumu yokt
 | istio-base / istiod / istio-ingressgateway | 1.30.3 | istio-system |
 | external-secrets | 2.10.0 | external-secrets |
 | kyverno | 3.9.0 (uygulama 1.19.0) | kyverno |
+| monitoring | kube-prometheus-stack 88.6.2 | monitoring |
 
 ArgoCD ve Kyverno override'ları `platform/` altındadır. Gateway kurulumunda
 `service.type=ClusterIP`, `labels.istio=ingressgateway`, `autoscaling.enabled=false`,
@@ -42,6 +45,7 @@ Yeni cluster'da sıralama:
 5. `postgresql` Application; pod hazır ve PVC Bound olduktan sonra devam edilir.
 6. user-service, order-service ve web-app Application'ları.
 7. `aks-platform` ve `aks-kyverno-policy` Application'ları; aşağıdaki testler.
+8. kube-prometheus-stack Helm release'i ve `aks-observability` Application'ı.
 
 Application dosyaları `argocd/aks-applications/` altındadır ve `main`i izler.
 Mevcut Minikube Application ve values dosyaları korunmuştur. AKS farkları
@@ -61,7 +65,8 @@ yarışını önler; restart sayısını gizlemek için pod'lar ayrıca silinmed
   servisler arasındaki mTLS'den farklı bir bağlantı ayağıdır.
 - `demo` ingress/egress default-deny. DNS ve istiod bağlantıları, gateway → web/order,
   web → order, order → user/PostgreSQL yolları seçici olarak açılmıştır.
-- Monitoring scrape izinleri henüz eklenmedi; sonraki aşamada açıkça tanımlanmalıdır.
+- Prometheus, Istio metric-merge endpoint'ini PodMonitor ile scrape eder. NetworkPolicy
+  yalnızca monitoring namespace'indeki Prometheus podundan TCP/15020 erişimini açar.
 - Kyverno Deny policy'si yalnızca **kyverno-demo** kapsamındadır, bütün cluster'ı veya
   `demo` namespace'ini koruyor gibi değerlendirilmemelidir. Böylece Istio'nun root
   `istio-init` container'ına geniş bir güvenlik istisnası açılmamıştır.
@@ -156,7 +161,14 @@ gereksiz yere uygulama ve hiçbir zaman GitOps kaynak dizinine taşıma.
 GitHub Actions'ta ilgili PR'ın test/build, Trivy ve Helm kontrollerinin yeşil ekranı.
 Trafik/güvenlik yapılandırması PR #32 ile main'e alınmıştır.
 
+### 7. Prometheus ve Grafana kanıtı
+
+Prometheus'ta `up{namespace="demo",job="monitoring/application-monitor"}` sorgusu üç
+uygulama target'ı için `1` döndürmelidir. Grafana'da `Cloud Native Application Overview`
+dashboard'u target health, request rate, HTTP 5xx oranı ve pod restart panellerini gösterir.
+Ayrıntılı açıklama için [`observability.md`](observability.md) belgesine bakın.
+
 ## Sıradaki sınır
 
-Dashboard + gerçek alarm + merkezi log. Ardından kapasite/HPA-VPA, backup/restore,
-felaket senaryosu ve en son Argo Rollouts bonusu. Bu doküman bu işleri tamamlanmış saymaz.
+Alertmanager harici bildirim receiver'ı + merkezi log. Ardından kapasite/HPA-VPA,
+backup/restore, felaket senaryosu ve en son Argo Rollouts bonusu.

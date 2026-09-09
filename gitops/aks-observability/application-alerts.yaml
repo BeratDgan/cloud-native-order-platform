@@ -1,0 +1,54 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: application-alerts
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: cloud-native-application.rules
+      rules:
+        - alert: ApplicationTargetDown
+          expr: up{namespace="demo", job="monitoring/application-monitor"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: "Application metrics target is down"
+            description: "Prometheus has been unable to scrape {{ $labels.pod }} for more than two minutes."
+
+        - alert: HighHttp5xxRate
+          expr: |
+            (
+              sum by (service) (
+                rate(http_requests_total{namespace="demo", status=~"5.."}[5m])
+              )
+              /
+              clamp_min(
+                sum by (service) (
+                  rate(http_requests_total{namespace="demo"}[5m])
+                ),
+                0.001
+              )
+            ) > 0.05
+          for: 2m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "Application HTTP 5xx rate is above 5%"
+            description: "{{ $labels.service }} has returned more than 5% HTTP 5xx responses for two minutes."
+
+        - alert: DemoPodRestarted
+          expr: |
+            sum by (namespace, pod) (
+              increase(kube_pod_container_status_restarts_total{namespace="demo"}[10m])
+            ) > 0
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: "A demo workload container restarted"
+            description: "{{ $labels.pod }} restarted during the last ten minutes."

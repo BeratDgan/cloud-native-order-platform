@@ -3,7 +3,8 @@ kind: NetworkPolicy
 metadata:
   name: allow-prometheus-scraping
   namespace: demo
-# hedef podlar app değeri user-service veya order-service. Yön: yalnızca Ingress. Kaynak namespace:- kubernetes.io/metadata.name: monitoring. Kaynak pod:- app.kubernetes.io/name: prometheus. İzin verilen port:- TCP 8080
+# Prometheus yalnızca monitoring namespace'inden uygulamaların Istio metric-merge
+# endpoint'ine erişebilir. Uygulama portu 8080 bu policy ile açılmaz.
 spec:
   podSelector:
     matchExpressions:
