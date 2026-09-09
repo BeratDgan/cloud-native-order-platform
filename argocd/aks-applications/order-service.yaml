@@ -11,7 +11,8 @@ spec:
     path: helm/order-service
     helm:
       releaseName: order-service
-      valueFiles: values-aks.yaml
+      valueFiles:
+        - values-aks.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: demo
