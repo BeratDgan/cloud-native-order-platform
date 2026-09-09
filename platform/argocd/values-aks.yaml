@@ -1,0 +1,25 @@
+# AKS tek node laboratuvari icin Argo CD Helm ayarlari.
+# Resmi argo/argo-cd chart'inin varsayilanlariyla birlestirilir.
+# Hedef chart surumu: 10.8.4 (Argo CD v3.5.2).
+
+server:
+  # Web arayuzu ve API. Dis IP acmayiz; erisim port-forward ile olur.
+  replicas: 1
+  service:
+    type: ClusterIP
+
+repoServer:
+  # Git deposunu okur; Helm chart'larindan Kubernetes manifestleri uretir.
+  replicas: 1
+
+controller:
+  # Git'teki istenen durum ile cluster'in durumunu karsilastirip sync'i yonetir.
+  replicas: 1
+
+redis-ha:
+  # Yedekli Redis yerine chart'in varsayilan tek Redis kurulumu kullanilir.
+  enabled: false
+
+dex:
+  # Simdilik SSO kullanmiyoruz; yerel Argo CD admin hesabi yeterli.
+  enabled: false

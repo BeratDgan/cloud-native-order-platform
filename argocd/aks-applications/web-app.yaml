@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: web-app
+  namespace: argocd
+spec:
+  project: cloud-native-platform
+  source:
+    repoURL: git@github.com:BeratDgan/cloud-native-order-platform.git
+    targetRevision: main
+    path: helm/web-app
+    helm:
+      releaseName: web-app
+      valueFiles: values-aks.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      enabled: true
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=false
+      - PruneLast=true

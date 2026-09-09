@@ -1,0 +1,3 @@
+webApp:
+  imagePullSecrets: []
+  replicaCount: 1
