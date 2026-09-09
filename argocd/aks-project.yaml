@@ -12,3 +12,5 @@ spec:
       namespace: demo
     - server: https://kubernetes.default.svc
       namespace: kyverno-demo
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
