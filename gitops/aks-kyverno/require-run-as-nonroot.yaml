@@ -15,7 +15,9 @@ spec:
       - apiGroups: [""]
         apiVersions: [v1]
         operations: [CREATE, UPDATE]
-        resources: [pods, pods/ephemeralcontainers]
+        # Subresource'lar raporlama controller'inin get/list/watch yetkilerine
+        # sahip degil. Bu policy Pod CREATE/UPDATE ve background taramasi icindir.
+        resources: [pods]
   variables:
     - name: containers
       expression: >-
