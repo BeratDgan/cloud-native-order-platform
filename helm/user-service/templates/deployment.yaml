@@ -33,6 +33,9 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+            - name: istio-metrics
+              containerPort: 15020
+              protocol: TCP
 
           # securityContext ile container için güvenlik önlemleri alındı
           #örneğin readOnlyRootFilesystem: true ile containerın root dosya sistemine yazma izni engellendi
