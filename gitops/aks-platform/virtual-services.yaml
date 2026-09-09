@@ -1,0 +1,57 @@
+# Web arayuzu ve /api proxy'si ayni giris noktasindan kullanilir.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: platform-ingress
+  namespace: demo
+spec:
+  hosts: ["*"]
+  gateways: [order-gateway]
+  http:
+    - match:
+        - uri:
+            prefix: /orders
+      route:
+        - destination:
+            host: order-service.demo.svc.cluster.local
+            subset: v1
+            port:
+              number: 8080
+          weight: 80
+        - destination:
+            host: order-service.demo.svc.cluster.local
+            subset: v2
+            port:
+              number: 8080
+          weight: 20
+    - route:
+        - destination:
+            host: web-app.demo.svc.cluster.local
+            port:
+              number: 3000
+---
+# Web-app'in /api proxy'si cluster-ici Service'e gider.
+# Mesh kurali olmadan web arayuzundeki istekler 80/20 kuralini kullanmaz.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: order-service-mesh
+  namespace: demo
+spec:
+  hosts:
+    - order-service.demo.svc.cluster.local
+  gateways: [mesh]
+  http:
+    - route:
+        - destination:
+            host: order-service.demo.svc.cluster.local
+            subset: v1
+            port:
+              number: 8080
+          weight: 80
+        - destination:
+            host: order-service.demo.svc.cluster.local
+            subset: v2
+            port:
+              number: 8080
+          weight: 20
