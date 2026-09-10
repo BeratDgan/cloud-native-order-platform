@@ -1,0 +1,46 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: platform-email
+  namespace: demo
+  labels:
+    alertmanager: monitoring
+spec:
+  route:
+    receiver: platform-email
+    groupBy:
+      - alertname
+      - namespace
+      - service
+      - pod
+    groupWait: 10s
+    groupInterval: 1m
+    repeatInterval: 4h
+    matchers:
+      - name: team
+        value: platform
+        matchType: "="
+  receivers:
+    - name: platform-email
+      emailConfigs:
+        - to: dgan.berat@gmail.com
+          from: dgan.berat@gmail.com
+          smarthost: smtp.gmail.com:587
+          authUsername: dgan.berat@gmail.com
+          authPassword:
+            name: alertmanager-email
+            key: app-password
+          requireTLS: true
+          sendResolved: true
+          headers:
+            - key: Subject
+              value: "[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}"
+          text: |-
+            Alert status: {{ .Status | toUpper }}
+
+            {{ range .Alerts -}}
+            Summary: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            Severity: {{ .Labels.severity }}
+            Namespace: {{ .Labels.namespace }}
+            {{ end }}

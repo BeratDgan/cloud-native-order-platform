@@ -2,7 +2,8 @@
 
 Bu aşamada uygulama metrikleri Prometheus tarafından toplanır, Grafana dashboard'u
 GitOps ile provision edilir ve temel uygulama alarmları PrometheusRule olarak yönetilir.
-Merkezi loglama ve Alertmanager'ın harici bildirim kanalına bağlanması sonraki adımdır.
+Alertmanager bildirimleri Gmail SMTP üzerinden gönderilir; merkezi loglama sonraki
+adımdır.
 
 ## Veri akışı
 
@@ -15,7 +16,7 @@ Istio metric merge :15020/stats/prometheus
         ▼
 PodMonitor → Prometheus → Grafana
                     │
-                    └── PrometheusRule → Alertmanager
+                    └── PrometheusRule → Alertmanager → Gmail SMTP
 ```
 
 Uygulamalar kendi `http_requests_total` ve `http_request_duration_seconds_*`
@@ -60,12 +61,40 @@ instance'ının bu kuralı seçmesini sağlar. Alarm üretimi ile bildirim gönd
 aşamalardır: Prometheus koşulu değerlendirir, Alertmanager ise eşleşen alarmı seçilen
 harici alıcıya yönlendirir.
 
+## E-posta bildirim akışı
+
+Gmail parolası Git'te veya AlertmanagerConfig içinde tutulmaz:
+
+```text
+Gmail App Password
+        │
+        ▼
+Azure Key Vault: alertmanager-gmail-app-password
+        │
+        ▼
+ExternalSecret: alertmanager-email
+        │
+        ▼
+Kubernetes Secret: demo/alertmanager-email
+        │
+        ▼
+AlertmanagerConfig → smtp.gmail.com:587
+```
+
+`platform-email` AlertmanagerConfig yalnızca `team=platform` etiketli ve `demo`
+namespace'ine ait alarmları alır. Bildirimler aynı alarm/servis/pod için gruplanır;
+ilk mesaj 10 saniye sonra, güncellemeler en erken bir dakika sonra gönderilir. Aynı
+alarm çözülmezse dört saatte bir tekrar edilir ve `sendResolved` ile düzelme mesajı
+da gönderilir.
+
 ## GitOps kaynakları
 
 - [`pod-monitor.yaml`](../gitops/aks-observability/pod-monitor.yaml)
 - [`network-policy.yaml`](../gitops/aks-observability/network-policy.yaml)
 - [`grafana-dashboard.yaml`](../gitops/aks-observability/grafana-dashboard.yaml)
 - [`application-alerts.yaml`](../gitops/aks-observability/application-alerts.yaml)
+- [`alertmanager-config.yaml`](../gitops/aks-observability/alertmanager-config.yaml)
+- [`alertmanager-email-external-secret.yaml`](../gitops/aks-external-secrets/alertmanager-email-external-secret.yaml)
 
 ArgoCD `gitops/aks-observability` dizinini izler. `main` değiştiğinde yeni dashboard,
 alarm kuralları ve scrape ayarları cluster'a otomatik olarak uygulanır.
@@ -76,6 +105,8 @@ alarm kuralları ve scrape ayarları cluster'a otomatik olarak uygulanır.
 kubectl --context aks-cloud-native-lab -n monitoring get podmonitor application-monitor
 kubectl --context aks-cloud-native-lab -n monitoring get prometheusrule application-alerts
 kubectl --context aks-cloud-native-lab -n monitoring get configmap grafana-dashboard-application-overview
+kubectl --context aks-cloud-native-lab -n demo get externalsecret alertmanager-email
+kubectl --context aks-cloud-native-lab -n demo get alertmanagerconfig platform-email
 ```
 
 Prometheus'ta kullanılan temel kontrol sorgusu:
@@ -97,6 +128,5 @@ değeridir.
 
 ## Kalan adım
 
-PrometheusRule alarm üretmeye hazırdır. Gerçek dış bildirim için Alertmanager receiver
-bilgisi bir Kubernetes Secret üzerinden sağlanmalı; webhook veya SMTP parolası Git'e
-yazılmamalıdır. Bundan sonra merkezi loglama için Loki kurulacaktır.
+Alarm e-postası kontrollü bir failure testiyle doğrulandıktan sonra merkezi loglama
+için Loki kurulacaktır.
