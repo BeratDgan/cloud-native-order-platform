@@ -5,3 +5,5 @@ webApp:
     enabled: true
   vpa:
     enabled: true
+  rollout:
+    enabled: true

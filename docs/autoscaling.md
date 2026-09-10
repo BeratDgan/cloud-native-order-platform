@@ -149,6 +149,12 @@ Trafik bittikten ve 60 saniyelik stabilization penceresi geçtikten sonra replic
 sayısı tekrar minimum 1'e iner. Node slotu yetersizliğinde HPA `desired` değerini
 artırsa bile yeni pod `Pending` olabilir; bu HPA hatası değil cluster kapasite sınırıdır.
 
+Gerçek testte user-service CPU kullanımı hedefin üzerine çıkınca replica sayısı
+`1 → 2` oldu. Yük kesildikten sonra CPU düştü ve stabilization süresinin ardından
+replica sayısı `2 → 1` döndü:
+
+![User-service HPA scale-up ve scale-down kanıtı](screenshots/42-user-service-hpa-scale-up-and-scale-down.png)
+
 ## VPA önerilerini okuma
 
 İlk öneri birkaç dakika içinde oluşabilir fakat tuning kararı için en az birkaç saat,
@@ -165,13 +171,18 @@ kubectl --context aks-cloud-native-lab -n demo describe vpa \
 `Upper Bound` ise yüksek kullanım dönemlerini kapsayan üst tahmindir. Bu değerler
 otomatik uygulanmaz; daha sonra Helm values üzerinde insan kararıyla düzenlenir.
 
+İlk kontrollü test sonrasında gözlenen hedefler yaklaşık olarak order-service ve
+web-app için `11m CPU / 35 MB`, user-service için `23m CPU / 50 MB` oldu. Mevcut
+`50m CPU / 64Mi` request değerleri bu kısa örneklemde hedeflerin üzerinde makul bir
+pay bırakıyor. User-service yük testi upper bound değerini kısa süreli olarak çok
+yükselttiği için tek sentetik testten sonra request düşürülmedi. Tuning kararı,
+en az 24 saatlik temsilî trafik ve p95 kullanım görüldükten sonra yeniden verilecek.
+
 ## Screenshot rehberi
 
-1. `42-hpa-scale-up.png`: yük testi sürerken `get hpa,pods --watch`; en az bir HPA'nın
-   `REPLICAS=2` ve iki hazır pod gösterdiği an.
-2. `43-hpa-scale-down.png`: trafik kesildikten sonra aynı HPA ve Deployment'ın tekrar
-   bir replica'ya döndüğü ekran.
-3. `44-vpa-recommendations.png`: `describe vpa order-service-v1-recommendation`
+1. `42-user-service-hpa-scale-up-and-scale-down.png`: mevcut kanıt; aynı terminalde
+   user-service'in `1 → 2 → 1` replica geçişini gösterir.
+2. `43-vpa-recommendations.png`: `describe vpa order-service-v1-recommendation`
    çıktısında `Mode: Off` ile lower/target/upper önerilerinin birlikte göründüğü bölüm.
-4. İsteğe bağlı Azure Portal: AKS → Configuration/Properties altında VPA'nın etkin
+3. İsteğe bağlı Azure Portal: AKS → Configuration/Properties altında VPA'nın etkin
    olduğu görünüm. Subscription ID gibi gereksiz hesap ayrıntıları kırpılmalıdır.

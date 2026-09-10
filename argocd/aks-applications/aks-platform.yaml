@@ -12,6 +12,16 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: demo
+  # Rollouts controller canary boyunca bu iki alani degistirir. ArgoCD'nin
+  # self-heal ile agirliklari Git'teki 100/0 degerine geri zorlamasi engellenir.
+  ignoreDifferences:
+    - group: networking.istio.io
+      kind: VirtualService
+      name: platform-ingress
+      namespace: demo
+      jsonPointers:
+        - /spec/http/1/route/0/weight
+        - /spec/http/1/route/1/weight
   syncPolicy:
     automated:
       prune: true
@@ -20,3 +30,4 @@ spec:
     syncOptions:
       - CreateNamespace=false
       - PruneLast=true
+      - RespectIgnoreDifferences=true

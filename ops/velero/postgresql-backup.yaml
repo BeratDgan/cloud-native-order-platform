@@ -1,0 +1,14 @@
+apiVersion: velero.io/v1
+kind: Backup
+metadata:
+  name: postgresql-dr-20260910
+  namespace: velero
+spec:
+  includedNamespaces:
+    - demo
+  labelSelector:
+    matchLabels:
+      app: postgresql
+  snapshotVolumes: true
+  storageLocation: default
+  ttl: 168h

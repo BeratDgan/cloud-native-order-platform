@@ -97,7 +97,8 @@ async function serveStatic(response, publicDir, pathname) {
 
 function createWebServer({
   orderServiceUrl = process.env.ORDER_SERVICE_URL || "http://127.0.0.1:8080",
-  publicDir = path.join(__dirname, "..", "public")
+  publicDir = path.join(__dirname, "..", "public"),
+  canaryTestFailure = process.env.CANARY_TEST_FAILURE === "true"
 } = {}) {
   return http.createServer(async (request, response) => {
     setSecurityHeaders(response);
@@ -105,6 +106,15 @@ function createWebServer({
 
     if (url.pathname === "/healthz") {
       sendJson(response, 200, { status: "ok", service: "web-app" });
+      return;
+    }
+
+    // Yalnizca Argo Rollouts rollback laboratuvarinda acilan kontrollu test endpoint'i.
+    if (url.pathname === "/rollout-test/fail") {
+      sendJson(response, canaryTestFailure ? 503 : 200, {
+        status: canaryTestFailure ? "simulated-failure" : "ok",
+        service: "web-app"
+      });
       return;
     }
 

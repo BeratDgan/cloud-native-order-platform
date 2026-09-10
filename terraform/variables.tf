@@ -54,3 +54,21 @@ variable "aks_location" {
   description = "AKS cluster'in kurulacagi Azure bolgesi"
   type        = string
 }
+
+variable "velero_storage_account_name" {
+  description = "Velero yedeklerinin tutulacagi globally unique Storage Account adi"
+  type        = string
+  default     = "stberatveleroaks"
+}
+
+variable "velero_backup_container_name" {
+  description = "Velero backup nesnelerinin tutulacagi private Blob container adi"
+  type        = string
+  default     = "velero-backups"
+}
+
+variable "velero_identity_name" {
+  description = "Velero tarafindan Workload Identity ile kullanilacak managed identity adi"
+  type        = string
+  default     = "id-velero-aks-lab"
+}

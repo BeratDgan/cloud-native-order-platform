@@ -34,3 +34,14 @@ webApp:
   vpa:
     enabled: false
     updateMode: "Off"
+
+  rollout:
+    enabled: false
+    stableService: web-app-stable
+    canaryService: web-app-canary
+    virtualService: platform-ingress
+    virtualServiceRoute: web-app-primary
+    analysisTemplate: web-app-5xx-rate
+    prometheusAddress: http://monitoring-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+    errorRateThreshold: 0.05
+    simulateFailure: false

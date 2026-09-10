@@ -44,3 +44,16 @@ test("proxies API requests to order-service", async (t) => {
   assert.equal(response.headers.get("x-request-id"), "test-request");
   assert.deepEqual(await response.json(), { items: [], count: 0, version: "v1" });
 });
+
+test("exposes an opt-in failure endpoint for rollout rollback tests", async (t) => {
+  const healthyServer = createWebServer({ canaryTestFailure: false });
+  const healthyUrl = await listen(healthyServer);
+  t.after(() => close(healthyServer));
+
+  const failingServer = createWebServer({ canaryTestFailure: true });
+  const failingUrl = await listen(failingServer);
+  t.after(() => close(failingServer));
+
+  assert.equal((await fetch(`${healthyUrl}/rollout-test/fail`)).status, 200);
+  assert.equal((await fetch(`${failingUrl}/rollout-test/fail`)).status, 503);
+});

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: web-app
+  name: {{ ternary .Values.webApp.rollout.stableService "web-app" .Values.webApp.rollout.enabled }}
   labels:
     app: web-app
 spec:
@@ -11,3 +11,19 @@ spec:
       name: http
   selector:
     app: web-app
+{{- if .Values.webApp.rollout.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.webApp.rollout.canaryService }}
+  labels:
+    app: web-app
+spec:
+  ports:
+    - port: {{ .Values.webApp.service.port }}
+      targetPort: http
+      name: http
+  selector:
+    app: web-app
+{{- end }}

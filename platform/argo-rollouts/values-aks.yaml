@@ -1,0 +1,37 @@
+installCRDs: true
+keepCRDs: true
+clusterInstall: true
+
+controller:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: monitoring
+      additionalLabels:
+        release: monitoring
+
+dashboard:
+  enabled: false
+
+providerRBAC:
+  enabled: true
+  providers:
+    istio: true
+    smi: false
+    ambassador: false
+    awsLoadBalancerController: false
+    awsAppMesh: false
+    traefik: false
+    apisix: false
+    contour: false
+    glooPlatform: false
+    gatewayAPI: false
