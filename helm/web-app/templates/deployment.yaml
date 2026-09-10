@@ -51,6 +51,10 @@ spec:
 
     
     metadata:
+      {{- if .Values.webApp.rollout.enabled }}
+      annotations:
+        rollout.lab/revision: {{ .Values.webApp.rollout.revision | quote }}
+      {{- end }}
       labels:
         app: web-app
         version: v1

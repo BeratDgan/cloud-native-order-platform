@@ -37,6 +37,7 @@ webApp:
 
   rollout:
     enabled: false
+    revision: analysis-query-v2
     stableService: web-app-stable
     canaryService: web-app-canary
     virtualService: platform-ingress
