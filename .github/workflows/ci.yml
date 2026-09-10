@@ -156,7 +156,26 @@ jobs:
             if [ -f "$chart/values-aks.yaml" ]; then
               helm lint "$chart" --values "$chart/values-aks.yaml"
               helm template "$(basename "$chart")" "$chart" --namespace demo \
-                --values "$chart/values-aks.yaml" > /dev/null
+              --values "$chart/values-aks.yaml" > /dev/null
             fi
           done
+
+      - name: Validate AKS platform Helm values
+        run: |
+          helm repo add grafana https://grafana.github.io/helm-charts
+          helm repo add grafana-community https://grafana-community.github.io/helm-charts
+          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo update
+
+          helm template loki grafana-community/loki \
+            --version 18.12.1 --namespace monitoring \
+            --values platform/loki/values-aks.yaml > /dev/null
+
+          helm template alloy grafana/alloy \
+            --version 1.12.1 --namespace monitoring \
+            --values platform/alloy/values-aks.yaml > /dev/null
+
+          helm template monitoring prometheus-community/kube-prometheus-stack \
+            --version 88.6.2 --namespace monitoring \
+            --values platform/monitoring/values-aks.yaml > /dev/null
 # Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.
