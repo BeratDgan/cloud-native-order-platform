@@ -128,6 +128,23 @@ Test özellikle var olmayan yüksek bir order ID'sini okur. Akış web-app → o
 → PostgreSQL → user-service yolunu çalıştırır fakat sipariş oluşturmaz. Istio 80/20
 ağırlığı nedeniyle v1 ve v2 aynı anda veya aynı hızda ölçeklenmek zorunda değildir.
 
+Tek bir HPA'yı temiz biçimde kanıtlamak için user-service doğrudan port-forward edilir:
+
+```bash
+kubectl --context aks-cloud-native-lab -n demo \
+  port-forward svc/user-service 18081:8080
+```
+
+Ardından ayrı terminalde yalnızca user-service'e üç dakika yük gönderilir:
+
+```bash
+node tests/aks/load.mjs http://127.0.0.1:18081 180 100 /users/1
+```
+
+Bu hedef diğer uygulama HPA'larını tetiklemez ve veri yazmaz. Screenshot için en temiz
+scale-up kanıtı bu testtir. Beşinci argüman verilmezse script varsayılan uçtan uca
+`/api/orders/999999999` yolunu kullanır.
+
 Trafik bittikten ve 60 saniyelik stabilization penceresi geçtikten sonra replica
 sayısı tekrar minimum 1'e iner. Node slotu yetersizliğinde HPA `desired` değerini
 artırsa bile yeni pod `Pending` olabilir; bu HPA hatası değil cluster kapasite sınırıdır.

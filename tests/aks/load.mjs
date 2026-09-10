@@ -3,7 +3,8 @@
 const baseUrl = process.argv[2] || "http://127.0.0.1:18080";
 const durationSeconds = Number(process.argv[3] || 120);
 const concurrency = Number(process.argv[4] || 30);
-const requestUrl = new URL("/api/orders/999999999", baseUrl);
+const requestPath = process.argv[5] || "/api/orders/999999999";
+const requestUrl = new URL(requestPath, baseUrl);
 
 if (!Number.isInteger(durationSeconds) || durationSeconds < 10) {
   throw new Error("Duration must be an integer of at least 10 seconds.");
@@ -28,12 +29,12 @@ async function worker() {
         signal: AbortSignal.timeout(10000),
       });
       const body = await response.json();
-      if (!response.ok || !Object.hasOwn(results.versions, body.version)) {
+      if (!response.ok) {
         results.failed++;
         continue;
       }
       results.completed++;
-      results.versions[body.version]++;
+      if (Object.hasOwn(results.versions, body.version)) results.versions[body.version]++;
     } catch {
       results.failed++;
     }
