@@ -2,8 +2,8 @@
 
 Bu aşamada uygulama metrikleri Prometheus tarafından toplanır, Grafana dashboard'u
 GitOps ile provision edilir ve temel uygulama alarmları PrometheusRule olarak yönetilir.
-Alertmanager bildirimleri Gmail SMTP üzerinden gönderilir; merkezi loglama sonraki
-adımdır.
+Alertmanager bildirimleri Gmail SMTP üzerinden gönderilir. `demo` pod logları Grafana
+Alloy tarafından Loki'ye aktarılır ve Grafana Explore üzerinden sorgulanır.
 
 ## Veri akışı
 
@@ -17,6 +17,8 @@ Istio metric merge :15020/stats/prometheus
 PodMonitor → Prometheus → Grafana
                     │
                     └── PrometheusRule → Alertmanager → Gmail SMTP
+
+demo pod stdout/stderr → Alloy → Loki → Grafana Explore
 ```
 
 Uygulamalar kendi `http_requests_total` ve `http_request_duration_seconds_*`
@@ -99,6 +101,11 @@ da gönderilir.
 ArgoCD `gitops/aks-observability` dizinini izler. `main` değiştiğinde yeni dashboard,
 alarm kuralları ve scrape ayarları cluster'a otomatik olarak uygulanır.
 
+Loki ve Alloy platform Helm release'leridir. Sürüm sabitleme, kaynak sınırları,
+saklama ve güvenlik ayarları Git'teki values dosyalarında yönetilir. Ayrıntılı mimari,
+kurulum ve LogQL örnekleri için [`centralized-logging.md`](centralized-logging.md)
+belgesine bakın.
+
 ## Doğrulama
 
 ```bash
@@ -126,7 +133,9 @@ değeridir.
 
 ![Grafana uygulama dashboard'u](screenshots/38-grafana-application-dashboard.png)
 
-## Kalan adım
+## Tamamlanan son doğrulamalar
 
-Alarm e-postası kontrollü bir failure testiyle doğrulandıktan sonra merkezi loglama
-için Loki kurulacaktır.
+- Kontrollü test alarmı Alertmanager tarafından Gmail alıcısına başarıyla gönderildi.
+- Loki API, `demo` namespace'indeki order-service ve user-service JSON loglarını
+  uygulama ve pod etiketleriyle döndürdü.
+- Alloy `2/2`, Loki `1/1` ve Grafana `3/3` hazır durumda doğrulandı.

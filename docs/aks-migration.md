@@ -1,8 +1,7 @@
 # AKS taşıması — doğrulama kontrol noktası
 
 Doğrulama tarihi: 10 Eylül 2026. AKS taşıması, Prometheus metrik toplama, Grafana
-dashboard ve Alertmanager e-posta yapılandırması tamamlandı. Kontrollü alarm testi ve
-merkezi loglama henüz tamamlanmadı.
+dashboard, Alertmanager e-posta testi ve Loki tabanlı merkezi loglama tamamlandı.
 
 ## Çalışan ortam
 
@@ -30,6 +29,8 @@ tanımları başlangıçta elle uygulanır; henüz bir app-of-apps kurulumu yokt
 | external-secrets | 2.10.0 | external-secrets |
 | kyverno | 3.9.0 (uygulama 1.19.0) | kyverno |
 | monitoring | kube-prometheus-stack 88.6.2 | monitoring |
+| loki | loki 18.12.1 (uygulama 3.7.7) | monitoring |
+| alloy | alloy 1.12.1 (uygulama 1.19.2) | monitoring |
 
 ArgoCD ve Kyverno override'ları `platform/` altındadır. Gateway kurulumunda
 `service.type=ClusterIP`, `labels.istio=ingressgateway`, `autoscaling.enabled=false`,
@@ -45,7 +46,8 @@ Yeni cluster'da sıralama:
 5. `postgresql` Application; pod hazır ve PVC Bound olduktan sonra devam edilir.
 6. user-service, order-service ve web-app Application'ları.
 7. `aks-platform` ve `aks-kyverno-policy` Application'ları; aşağıdaki testler.
-8. kube-prometheus-stack Helm release'i ve `aks-observability` Application'ı.
+8. kube-prometheus-stack, Loki ve Alloy Helm release'leri; ardından
+   `aks-observability` Application'ı.
 
 Application dosyaları `argocd/aks-applications/` altındadır ve `main`i izler.
 Mevcut Minikube Application ve values dosyaları korunmuştur. AKS farkları
@@ -168,7 +170,15 @@ uygulama target'ı için `1` döndürmelidir. Grafana'da `Cloud Native Applicati
 dashboard'u target health, request rate, HTTP 5xx oranı ve pod restart panellerini gösterir.
 Ayrıntılı açıklama için [`observability.md`](observability.md) belgesine bakın.
 
+### 8. Loki merkezi log kanıtı
+
+Grafana → Explore bölümünde datasource olarak `Loki` ve zaman aralığı olarak
+`Last 15 minutes` seç. `{namespace="demo", app="order-service"} | json` sorgusunda
+farklı podlardan gelen yapılandırılmış kayıtların tek ekranda görüldüğünü kanıtla.
+Ayrıntılı kurulum ve doğrulama için
+[`centralized-logging.md`](centralized-logging.md) belgesine bakın.
+
 ## Sıradaki sınır
 
-Kontrollü Alertmanager e-posta testi + merkezi log. Ardından kapasite/HPA-VPA,
-backup/restore, felaket senaryosu ve en son Argo Rollouts bonusu.
+Kapasite ölçümü ve HPA/VPA. Ardından backup/restore, felaket senaryosu ve en son
+Argo Rollouts bonusu.
