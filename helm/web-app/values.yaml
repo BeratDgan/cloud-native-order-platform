@@ -3,7 +3,7 @@ webApp:
 
   image:
     repository: beratcloudnativeacr.azurecr.io/web-app
-    tag: 5de38d6509dd0d95f6303f45fa3aa748b9be393f
+    tag: 2bd0923ee89023abe8954055759981f3e64b47fe
     pullPolicy: IfNotPresent
 
   orderServiceUrl: http://order-service:8080
