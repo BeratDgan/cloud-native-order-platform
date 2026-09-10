@@ -22,12 +22,12 @@ spec:
         - alert: HighHttp5xxRate
           expr: |
             (
-              sum by (service) (
+              sum by (namespace, service) (
                 rate(http_requests_total{namespace="demo", status=~"5.."}[5m])
               )
               /
               clamp_min(
-                sum by (service) (
+                sum by (namespace, service) (
                   rate(http_requests_total{namespace="demo"}[5m])
                 ),
                 0.001

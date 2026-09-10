@@ -1,8 +1,8 @@
 # AKS taşıması — doğrulama kontrol noktası
 
-Doğrulama tarihi: 10 Eylül 2026. AKS taşıması, Prometheus metrik toplama ve Grafana
-dashboard kurulumu tamamlandı. Alertmanager harici bildirim kanalı ve merkezi loglama
-henüz tamamlanmadı.
+Doğrulama tarihi: 10 Eylül 2026. AKS taşıması, Prometheus metrik toplama, Grafana
+dashboard ve Alertmanager e-posta yapılandırması tamamlandı. Kontrollü alarm testi ve
+merkezi loglama henüz tamamlanmadı.
 
 ## Çalışan ortam
 
@@ -170,5 +170,5 @@ Ayrıntılı açıklama için [`observability.md`](observability.md) belgesine b
 
 ## Sıradaki sınır
 
-Alertmanager harici bildirim receiver'ı + merkezi log. Ardından kapasite/HPA-VPA,
+Kontrollü Alertmanager e-posta testi + merkezi log. Ardından kapasite/HPA-VPA,
 backup/restore, felaket senaryosu ve en son Argo Rollouts bonusu.
