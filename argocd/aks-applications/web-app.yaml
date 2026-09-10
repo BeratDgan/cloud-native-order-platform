@@ -16,6 +16,15 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: demo
+  # Rollout CRD scale endpoint'i spec.replicas alanini bekler. Baslangic degeri
+  # Git'ten gelir; daha sonra bu alani HPA yonettigi icin ArgoCD ignore eder.
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Rollout
+      name: web-app
+      namespace: demo
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
     automated:
       enabled: true
@@ -25,3 +34,4 @@ spec:
     syncOptions:
       - CreateNamespace=false
       - PruneLast=true
+      - RespectIgnoreDifferences=true
