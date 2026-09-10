@@ -14,3 +14,4 @@ npm-debug.log*
 *.tfstate.*
 *.tfplan
 terraform.tfvars
+docs/kitapcik/
