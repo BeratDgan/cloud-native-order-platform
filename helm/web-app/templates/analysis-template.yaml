@@ -1,0 +1,34 @@
+{{- if .Values.webApp.rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ .Values.webApp.rollout.analysisTemplate }}
+  labels:
+    app: web-app
+    app.kubernetes.io/name: web-app
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  metrics:
+    - name: istio-5xx-rate
+      interval: 15s
+      count: 3
+      successCondition: result[0] <= {{ .Values.webApp.rollout.errorRateThreshold }}
+      failureCondition: result[0] > {{ .Values.webApp.rollout.errorRateThreshold }}
+      failureLimit: 1
+      provider:
+        prometheus:
+          address: {{ .Values.webApp.rollout.prometheusAddress }}
+          query: |
+            scalar(
+              (sum(rate(istio_requests_total{
+                reporter="destination",
+                destination_workload="web-app",
+                response_code=~"5.*"
+              }[1m])) or vector(0))
+              /
+              clamp_min(sum(rate(istio_requests_total{
+                reporter="destination",
+                destination_workload="web-app"
+              }[1m])), 0.001)
+            )
+{{- end }}

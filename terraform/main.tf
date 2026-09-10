@@ -119,3 +119,59 @@ resource "azurerm_federated_identity_credential" "external_secrets" {
   issuer                    = azurerm_kubernetes_cluster.platform.oidc_issuer_url
   subject                   = "system:serviceaccount:demo:external-secrets-key-vault"
 }
+
+# Velero yedeklerini Terraform state'inden ayri, private bir Blob container'da tutar.
+resource "azurerm_storage_account" "velero" {
+  name                            = var.velero_storage_account_name
+  resource_group_name             = data.azurerm_resource_group.lab.name
+  location                        = data.azurerm_resource_group.lab.location
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  account_kind                    = "StorageV2"
+  min_tls_version                 = "TLS1_2"
+  shared_access_key_enabled       = false
+  public_network_access_enabled   = true
+  allow_nested_items_to_be_public = false
+
+  tags = local.common_tags
+}
+
+resource "azurerm_storage_container" "velero" {
+  name                  = var.velero_backup_container_name
+  storage_account_id    = azurerm_storage_account.velero.id
+  container_access_type = "private"
+}
+
+# Velero'ya parola veya Storage Account key'i vermek yerine Workload Identity kullanilir.
+resource "azurerm_user_assigned_identity" "velero" {
+  name                = var.velero_identity_name
+  location            = data.azurerm_resource_group.lab.location
+  resource_group_name = data.azurerm_resource_group.lab.name
+  tags                = local.common_tags
+}
+
+resource "azurerm_role_assignment" "velero_blob_contributor" {
+  scope                            = azurerm_storage_account.velero.id
+  role_definition_name             = "Storage Blob Data Contributor"
+  principal_id                     = azurerm_user_assigned_identity.velero.principal_id
+  principal_type                   = "ServicePrincipal"
+  skip_service_principal_aad_check = true
+}
+
+# Azure eklentisi Blob endpoint bilgisini okuyabilmek icin Storage Account Reader ister.
+resource "azurerm_role_assignment" "velero_storage_reader" {
+  scope                            = azurerm_storage_account.velero.id
+  role_definition_name             = "Reader"
+  principal_id                     = azurerm_user_assigned_identity.velero.principal_id
+  principal_type                   = "ServicePrincipal"
+  skip_service_principal_aad_check = true
+}
+
+# Yalnizca velero namespace'indeki velero ServiceAccount bu identity'yi kullanabilir.
+resource "azurerm_federated_identity_credential" "velero" {
+  name                      = "fic-velero-aks-lab"
+  user_assigned_identity_id = azurerm_user_assigned_identity.velero.id
+  audience                  = ["api://AzureADTokenExchange"]
+  issuer                    = azurerm_kubernetes_cluster.platform.oidc_issuer_url
+  subject                   = "system:serviceaccount:velero:velero"
+}

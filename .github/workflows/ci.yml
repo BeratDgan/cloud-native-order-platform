@@ -165,6 +165,8 @@ jobs:
           helm repo add grafana https://grafana.github.io/helm-charts
           helm repo add grafana-community https://grafana-community.github.io/helm-charts
           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm repo add vmware-tanzu https://vmware-tanzu.github.io/helm-charts
           helm repo update
 
           helm template loki grafana-community/loki \
@@ -178,4 +180,12 @@ jobs:
           helm template monitoring prometheus-community/kube-prometheus-stack \
             --version 88.6.2 --namespace monitoring \
             --values platform/monitoring/values-aks.yaml > /dev/null
+
+          helm template argo-rollouts argo/argo-rollouts \
+            --version 2.43.1 --namespace argo-rollouts \
+            --values platform/argo-rollouts/values-aks.yaml > /dev/null
+
+          helm template velero vmware-tanzu/velero \
+            --version 12.1.0 --namespace velero \
+            --values platform/velero/values-aks.yaml > /dev/null
 # Herhangi bir test, image build veya Helm kontrolü başarısızsa pipeline kırılacak.

@@ -24,11 +24,18 @@ spec:
             port:
               number: 8080
           weight: 20
-    - route:
+    - name: web-app-primary
+      route:
         - destination:
-            host: web-app.demo.svc.cluster.local
+            host: web-app-stable.demo.svc.cluster.local
             port:
               number: 3000
+          weight: 100
+        - destination:
+            host: web-app-canary.demo.svc.cluster.local
+            port:
+              number: 3000
+          weight: 0
 ---
 # Web-app'in /api proxy'si cluster-ici Service'e gider.
 # Mesh kurali olmadan web arayuzundeki istekler 80/20 kuralini kullanmaz.

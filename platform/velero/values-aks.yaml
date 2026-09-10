@@ -1,0 +1,99 @@
+image:
+  repository: docker.io/velero/velero
+  tag: v1.18.1
+  pullPolicy: IfNotPresent
+
+initContainers:
+  - name: velero-plugin-for-microsoft-azure
+    image: docker.io/velero/velero-plugin-for-microsoft-azure:v1.14.2
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+# Azure Workload Identity webhook'u bu etikete sahip pod'a federated token ekler.
+podLabels:
+  azure.workload.identity/use: "true"
+
+serviceAccount:
+  server:
+    create: true
+    name: velero
+    annotations:
+      azure.workload.identity/client-id: "1835caee-75e2-41b4-9021-5e4ebd46ffe9"
+
+# Storage Account key'i veya client secret kullanilmaz.
+credentials:
+  useSecret: false
+
+configuration:
+  features: EnableCSI
+  defaultBackupTTL: 168h
+  backupStorageLocation:
+    - name: default
+      provider: velero.io/azure
+      bucket: velero-backups
+      default: true
+      accessMode: ReadWrite
+      config:
+        resourceGroup: rg-cloud-native-lab
+        storageAccount: stberatveleroaks
+        subscriptionId: 1b5a3962-c8a7-4a9c-a5b4-960deb325cbf
+        useAAD: "true"
+  volumeSnapshotLocation: []
+
+# Volume snapshot islemi Azure provider eklentisi yerine Velero'nun CSI destegiyle yapilir.
+snapshotsEnabled: false
+deployNodeAgent: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 512Mi
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+# AKS managed-csi PVC'lerinin snapshot sinifini Velero otomatik secer.
+extraObjects:
+  - apiVersion: snapshot.storage.k8s.io/v1
+    kind: VolumeSnapshotClass
+    metadata:
+      name: velero-azure-disk
+      labels:
+        velero.io/csi-volumesnapshot-class: "true"
+    driver: disk.csi.azure.com
+    deletionPolicy: Retain
+    parameters:
+      incremental: "true"
+  - apiVersion: velero.io/v1
+    kind: Schedule
+    metadata:
+      name: postgresql-daily
+      namespace: velero
+    spec:
+      schedule: "0 2 * * *"
+      template:
+        includedNamespaces:
+          - demo
+        labelSelector:
+          matchLabels:
+            app: postgresql
+        snapshotVolumes: true
+        storageLocation: default
+        ttl: 168h

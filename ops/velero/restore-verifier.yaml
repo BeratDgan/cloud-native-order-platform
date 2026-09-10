@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgresql-restore-verifier
+  namespace: demo-dr
+  labels:
+    app: postgresql-restore-verifier
+spec:
+  restartPolicy: Never
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 70
+    runAsGroup: 70
+    fsGroup: 70
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: verifier
+      image: postgres:18-alpine@sha256:d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          test -f /restore/pgdata/PG_VERSION
+          test -d /restore/pgdata/base
+          echo "RESTORE_OK: PG_VERSION=$(cat /restore/pgdata/PG_VERSION), database files are present"
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        readOnlyRootFilesystem: true
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+      volumeMounts:
+        - name: restored-data
+          mountPath: /restore
+          readOnly: true
+  volumes:
+    - name: restored-data
+      persistentVolumeClaim:
+        claimName: postgresql-data-postgresql-0

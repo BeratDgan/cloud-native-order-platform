@@ -57,3 +57,23 @@ output "aks_start_command" {
   description = "Durdurulan AKS cluster'ını başlatma komutu"
   value       = "az aks start --resource-group ${var.resource_group_name} --name ${var.aks_name}"
 }
+
+output "velero_storage_account_name" {
+  description = "Velero BackupStorageLocation tarafindan kullanilan Storage Account"
+  value       = azurerm_storage_account.velero.name
+}
+
+output "velero_backup_container_name" {
+  description = "Velero yedeklerinin tutuldugu private Blob container"
+  value       = azurerm_storage_container.velero.name
+}
+
+output "velero_identity_client_id" {
+  description = "Velero ServiceAccount annotation icin kullanilan client ID"
+  value       = azurerm_user_assigned_identity.velero.client_id
+}
+
+output "velero_identity_principal_id" {
+  description = "Velero Azure RBAC atamalarinda kullanilan principal ID"
+  value       = azurerm_user_assigned_identity.velero.principal_id
+}

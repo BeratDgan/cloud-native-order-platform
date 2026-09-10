@@ -1,5 +1,10 @@
+{{- if .Values.webApp.rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+{{- else }}
 apiVersion: apps/v1
 kind: Deployment
+{{- end }}
 metadata:
   name: web-app
   labels:
@@ -9,6 +14,34 @@ metadata:
 spec:
   {{- if not .Values.webApp.autoscaling.enabled }}
   replicas: {{.Values.webApp.replicaCount }}
+  {{- end }}
+  {{- if .Values.webApp.rollout.enabled }}
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 180
+  progressDeadlineAbort: true
+  strategy:
+    canary:
+      stableService: {{ .Values.webApp.rollout.stableService }}
+      canaryService: {{ .Values.webApp.rollout.canaryService }}
+      maxSurge: 1
+      maxUnavailable: 0
+      abortScaleDownDelaySeconds: 30
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.webApp.rollout.virtualService }}
+            routes:
+              - {{ .Values.webApp.rollout.virtualServiceRoute }}
+      steps:
+        - setWeight: 20
+        - pause:
+            duration: 30s
+        - analysis:
+            templates:
+              - templateName: {{ .Values.webApp.rollout.analysisTemplate }}
+        - setWeight: 50
+        - pause:
+            duration: 30s
   {{- end }}
   selector:
     matchLabels:
@@ -63,5 +96,7 @@ spec:
           env:
             - name: ORDER_SERVICE_URL
               value: {{ .Values.webApp.orderServiceUrl | quote }}
+            - name: CANARY_TEST_FAILURE
+              value: {{ .Values.webApp.rollout.simulateFailure | quote }}
           resources:
 {{ toYaml .Values.webApp.resources | indent 12 }}
