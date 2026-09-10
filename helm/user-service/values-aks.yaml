@@ -1,2 +1,6 @@
 userService:
   imagePullSecrets: []
+  autoscaling:
+    enabled: true
+  vpa:
+    enabled: true

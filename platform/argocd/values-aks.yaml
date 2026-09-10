@@ -16,6 +16,14 @@ controller:
   # Git'teki istenen durum ile cluster'in durumunu karsilastirip sync'i yonetir.
   replicas: 1
 
+applicationSet:
+  # Bu projede ApplicationSet kullanilmiyor; tek node'da gereksiz pod tuketmez.
+  replicas: 0
+
+notifications:
+  # Argo CD notification trigger/template yapilandirmasi kullanilmiyor.
+  enabled: false
+
 redis-ha:
   # Yedekli Redis yerine chart'in varsayilan tek Redis kurulumu kullanilir.
   enabled: false

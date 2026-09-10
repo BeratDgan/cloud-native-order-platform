@@ -1,0 +1,30 @@
+{{- if .Values.orderService.vpa.enabled }}
+{{- range .Values.orderService.versions }}
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: order-service-{{ .name }}-recommendation
+  labels:
+    app: order-service
+    version: {{ .name }}
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service-{{ .name }}
+  updatePolicy:
+    updateMode: {{ $.Values.orderService.vpa.updateMode | quote }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: order-service
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsOnly
+      - containerName: "*"
+        mode: "Off"
+{{- end }}
+{{- end }}

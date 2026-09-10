@@ -180,5 +180,8 @@ Ayrıntılı kurulum ve doğrulama için
 
 ## Sıradaki sınır
 
-Kapasite ölçümü ve HPA/VPA. Ardından backup/restore, felaket senaryosu ve en son
-Argo Rollouts bonusu.
+HPA/VPA ve kaynak ölçümü tamamlandı. Sırada backup/restore, felaket senaryosu ve en
+son Argo Rollouts bonusu vardır.
+
+Autoscaling tasarımı, test trafiği ve kanıt adımları için
+[`autoscaling.md`](autoscaling.md) belgesine bakın.

@@ -4,6 +4,7 @@ admissionController:
 backgroundController:
   replicas: 1
 cleanupController:
-  replicas: 1
+  # CleanupPolicy kullanilmadigi icin tek node'da gereksiz pod calistirma.
+  enabled: false
 reportsController:
   replicas: 1

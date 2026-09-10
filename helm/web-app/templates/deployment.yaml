@@ -7,9 +7,9 @@ metadata:
     app.kubernetes.io/name: web-app
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-
-  
+  {{- if not .Values.webApp.autoscaling.enabled }}
   replicas: {{.Values.webApp.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
       app: web-app

@@ -1,0 +1,32 @@
+{{- if .Values.orderService.autoscaling.enabled }}
+{{- range .Values.orderService.versions }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: order-service-{{ .name }}
+  labels:
+    app: order-service
+    version: {{ .name }}
+    app.kubernetes.io/name: order-service
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: order-service-{{ .name }}
+  minReplicas: {{ $.Values.orderService.autoscaling.minReplicas }}
+  maxReplicas: {{ $.Values.orderService.autoscaling.maxReplicas }}
+  metrics:
+    - type: ContainerResource
+      containerResource:
+        name: cpu
+        container: order-service
+        target:
+          type: Utilization
+          averageUtilization: {{ $.Values.orderService.autoscaling.targetCPUUtilizationPercentage }}
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ $.Values.orderService.autoscaling.behavior.scaleDown.stabilizationWindowSeconds }}
+{{- end }}
+{{- end }}

@@ -77,6 +77,12 @@ resource "azurerm_kubernetes_cluster" "platform" {
     mode = "Manual"
   }
 
+  # AKS-managed VPA controller/recommender kurulur. Workload VPA nesneleri
+  # updateMode=Off kullandığı için yalnızca öneri üretir, podları değiştirmez.
+  workload_autoscaler_profile {
+    vertical_pod_autoscaler_enabled = true
+  }
+
   # burada network profile oluşturuyorum ve network profile için gerekli ayarları yapıyorum.
   # network profile, AKS cluster'ının ağ yapılandırmasını belirler. Bu yapılandırma, ağ eklentisi, ağ politikası ve diğer ağ özelliklerini içerir.
   network_profile {
