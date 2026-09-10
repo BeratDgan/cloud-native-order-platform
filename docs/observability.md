@@ -133,6 +133,8 @@ değeridir.
 
 ![Grafana uygulama dashboard'u](screenshots/38-grafana-application-dashboard.png)
 
+![Alertmanager test e-postası](screenshots/40-email-alertymanager-test.png)
+
 ## Tamamlanan son doğrulamalar
 
 - Kontrollü test alarmı Alertmanager tarafından Gmail alıcısına başarıyla gönderildi.

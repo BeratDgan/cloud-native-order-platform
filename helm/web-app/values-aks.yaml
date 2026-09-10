@@ -1,3 +1,7 @@
 webApp:
   imagePullSecrets: []
   replicaCount: 1
+  autoscaling:
+    enabled: true
+  vpa:
+    enabled: true

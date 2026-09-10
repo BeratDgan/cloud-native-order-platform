@@ -21,3 +21,16 @@ webApp:
   
   imagePullSecrets:
     - name: acr-pull-secret
+
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 60
+    behavior:
+      scaleDown:
+        stabilizationWindowSeconds: 60
+
+  vpa:
+    enabled: false
+    updateMode: "Off"

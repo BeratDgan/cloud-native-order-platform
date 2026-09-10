@@ -111,6 +111,8 @@ ekranıdır. Üstte zaman aralığı `Last 15 minutes`, sağ üstte `Live` kapal
 `service`, `event`, `status`, `durationMs` alanları görünür olmalıdır. Secret, e-posta
 adresi veya Grafana giriş bilgisi ekran görüntüsüne dahil edilmemelidir.
 
+![Loki üzerinde merkezi uygulama logları](screenshots/39-loki-centralized-application-logs.png)
+
 ## Sınırlar
 
 - Tek Loki replica nedeniyle pod yeniden başlarken kısa sorgu kesintisi olabilir.

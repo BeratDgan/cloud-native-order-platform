@@ -1,0 +1,26 @@
+{{- if .Values.userService.vpa.enabled }}
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: user-service-recommendation
+  labels:
+    app: user-service
+    app.kubernetes.io/name: user-service
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: user-service
+  updatePolicy:
+    updateMode: {{ .Values.userService.vpa.updateMode | quote }}
+  resourcePolicy:
+    containerPolicies:
+      - containerName: user-service
+        controlledResources:
+          - cpu
+          - memory
+        controlledValues: RequestsOnly
+      - containerName: "*"
+        mode: "Off"
+{{- end }}
