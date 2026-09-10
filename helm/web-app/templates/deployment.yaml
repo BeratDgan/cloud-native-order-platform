@@ -12,7 +12,7 @@ metadata:
     app.kubernetes.io/name: web-app
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
-  {{- if not .Values.webApp.autoscaling.enabled }}
+  {{- if or .Values.webApp.rollout.enabled (not .Values.webApp.autoscaling.enabled) }}
   replicas: {{.Values.webApp.replicaCount }}
   {{- end }}
   {{- if .Values.webApp.rollout.enabled }}
