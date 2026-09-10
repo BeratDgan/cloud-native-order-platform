@@ -1,17 +1,13 @@
 apiVersion: velero.io/v1
 kind: Restore
 metadata:
-  name: postgresql-dr-restore-20260910
+  name: postgresql-dr-restore-20260910-v2
   namespace: velero
 spec:
   backupName: postgresql-dr-20260910
   includedNamespaces:
     - demo
-  includedResources:
-    - persistentvolumeclaims
   namespaceMapping:
     demo: demo-dr
-  labelSelector:
-    matchLabels:
-      app: postgresql
   restorePVs: true
+  includeClusterResources: true
