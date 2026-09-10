@@ -19,16 +19,14 @@ spec:
         prometheus:
           address: {{ .Values.webApp.rollout.prometheusAddress }}
           query: |
-            scalar(
-              (sum(rate(istio_requests_total{
-                reporter="destination",
-                destination_workload="web-app",
-                response_code=~"5.*"
-              }[1m])) or vector(0))
-              /
-              clamp_min(sum(rate(istio_requests_total{
-                reporter="destination",
-                destination_workload="web-app"
-              }[1m])), 0.001)
-            )
+            (sum(rate(istio_requests_total{
+              reporter="destination",
+              destination_workload="web-app",
+              response_code=~"5.*"
+            }[1m])) or vector(0))
+            /
+            clamp_min(sum(rate(istio_requests_total{
+              reporter="destination",
+              destination_workload="web-app"
+            }[1m])), 0.001)
 {{- end }}
